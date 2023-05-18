@@ -48,6 +48,8 @@ class ViveTrackerViewer(glut_viewer.Viewer):
             self.vive_updater.toggle_record()
         if key == b"s":
             self.vive_updater.save()
+        # if key == b"c":
+        #     self.vive_updater.calibrate()
         if key == b"a":
             self.vive_updater.add_device()
         else:
@@ -69,7 +71,7 @@ class ViveTrackerViewer(glut_viewer.Viewer):
             color=[0.8, 0.8, 0.8],
             axis="z",
             origin=True,
-            use_arrow=True,
+            use_arrow=False,
             fillIn=False
         )
 

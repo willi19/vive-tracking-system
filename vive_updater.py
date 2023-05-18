@@ -12,7 +12,7 @@ import numpy as np
 import datetime
 import time
 import pickle
-
+from copy import deepcopy
 # def parse_arguments():
 #     parser = argparse.ArgumentParser(description="Vive Tracker Pose Data Display")
 #     parser.add_argument("-f", "--frequency", type=float, default=30.0,
@@ -62,8 +62,8 @@ class ViveTrackerUpdater():
 
     # TODO add fps
     def update(self, print=False):
-        if self.calibration:
-            self.calibrate()
+        # if self.calibration:
+        self.calibrate()
         self.tracking_result = [self.env_offset @ self.local_origin @ self.tracking_devices[key].get_T() for key in self.tracking_devices]
         if print:
             for r in self.tracking_result:
@@ -71,7 +71,7 @@ class ViveTrackerUpdater():
 
         if self.is_record:
             self.record_data['data'].append(self.tracking_result)
-            self.record_data['timestamp'].append(time.time())
+            self.record_data['record_timestamp'].append(time.time())
 
     def add_device(self):
         self.vive_tracker_module.update_add_device()
@@ -79,13 +79,13 @@ class ViveTrackerUpdater():
         self.vive_tracker_module.print_discovered_objects()
         
         if 'tracker_keys' in self.record_data:
-            self.record_data['tracker_keys'] = self.tracking_devices.keys()
+            self.record_data['tracker_keys'] = list(self.tracking_devices.keys())
             
 
     def init_record(self):
         self.is_record = True
         self.record_data['fps'] = self.fps
-        self.record_data['tracker_keys'] = self.tracking_devices.keys()
+        self.record_data['tracker_keys'] = list(self.tracking_devices.keys())
         self.record_data['data'] = []
         self.record_data['local_origin'] = self.local_origin
         self.record_data['record_start_time'] = datetime.datetime.now()
@@ -94,18 +94,21 @@ class ViveTrackerUpdater():
 
     def toggle_record(self):
         self.is_record = not self.is_record
-
+        if self.is_record:
+            print("init record")
+            self.init_record()
 
     def save(self):
         if len(self.record_data) == 0:
             print("Record is empty. Start recording first!")
             return 
         current_time = datetime.datetime.now()
-        time_str = current_time.strftime("%m-%d-%H-%M") + ".pkl"
+        time_str = current_time.strftime("%m-%d-%H-%M")
 
         filename = f"./record/{time_str}.pkl"
         with open(filename, "wb") as file:
-            pickle.dump(self.record_data, file, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(deepcopy(self.record_data), file)
+        print(f"Saving record {filename} with trackers {self.record_data['tracker_keys']}")
 
 
 def main(args):
