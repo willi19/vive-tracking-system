@@ -49,8 +49,6 @@ class ViveTrackerUpdater():
 
         self.calibration = True
         self.local_origin = constants.eye_T()
-        # self.env_offset = conversions.R2T(conversions.Ay2R(conversions.deg2rad(-180)))
-        self.env_offset = constants.eye_T()        
 
         self.is_record = False
         self.record_data = {}
@@ -64,7 +62,7 @@ class ViveTrackerUpdater():
     def update(self, print=False):
         # if self.calibration:
         self.calibrate()
-        self.tracking_result = [self.env_offset @ self.local_origin @ self.tracking_devices[key].get_T() for key in self.tracking_devices]
+        self.tracking_result = [self.local_origin @ self.tracking_devices[key].get_T() for key in self.tracking_devices]
         if print:
             for r in self.tracking_result:
                 print("\r" + r, end="")
