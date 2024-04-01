@@ -52,8 +52,6 @@ class ViveTrackerViewer(glut_viewer.Viewer):
         #     self.vive_updater.calibrate()
         if key == b"a":
             self.vive_updater.add_device()
-        if key == b"c":
-            self.vive_updater.calibrate()
         else:
             return False
         return True

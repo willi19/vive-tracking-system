@@ -13,29 +13,7 @@ import datetime
 import time
 import pickle
 from copy import deepcopy
-# def parse_arguments():
-#     parser = argparse.ArgumentParser(description="Vive Tracker Pose Data Display")
-#     parser.add_argument("-f", "--frequency", type=float, default=30.0,
-#                         help="Frequency of tracker data updates (in Hz). Default: 30 Hz")
-#     return parser.parse_args()
-
-# def print_tracker_data(tracker, interval):
-#     # Continuously print tracker pose data at the specified interval
-#     while True:
-#         start_time = time.time()
-
-#         # Get pose data for the tracker device and format as a string
-#         pose_data = " ".join(["%.4f" % val for val in tracker.get_pose_euler()])
-
-#         # Print pose data in the same line
-#         print("\r" + pose_data, end="")
-
-#         # Calculate sleep time to maintain the desired interval
-#         sleep_time = interval - (time.time() - start_time)
-
-#         # Sleep if necessary
-#         if sleep_time > 0:
-#             time.sleep(sleep_time)
+import socket
 
 class ViveTrackerUpdater():
     def __init__(self):
@@ -52,6 +30,10 @@ class ViveTrackerUpdater():
 
         self.is_record = False
         self.record_data = {}
+
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.connect(('localhost', 5000))
+
         
     def calibrate(self):
         origin_device = self.tracking_devices["Tracker_1"]
@@ -70,6 +52,13 @@ class ViveTrackerUpdater():
         if self.is_record:
             self.record_data['data'].append(self.tracking_result)
             self.record_data['record_timestamp'].append(time.time())
+        
+        # send data to server
+        data = {
+            'data': self.tracking_result,
+            'timestamp': time.time()
+        }
+        self.client_socket.send(str(data).encode())
 
     def add_device(self):
         self.vive_tracker_module.update_add_device()
